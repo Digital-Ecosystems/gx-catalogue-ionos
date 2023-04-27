@@ -47,25 +47,8 @@ variable "domain" {
   default = "example.com"
 }
 
-module "nginx_ingress" {
-  source = "./nginx_ingress"
-
-}
-
-module "cert_manager" {
-  source = "./cert_manager"
-
-  depends_on = [
-    module.nginx_ingress
-  ]
-}
-
 module "infrastructure_services" {
   source = "./infrastructure_services"
-
-  depends_on = [
-    module.cert_manager
-  ]
 
   domain = "${var.domain}"
 }

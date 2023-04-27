@@ -18,7 +18,7 @@ These are the services that are deployed:
 ## Requirements
 
 Before you start deploying the Federated Catalogue, make sure you meet the requirements:
-- IONOS DCD Account
+- Kubernetes cluster with installed **cert-manager**, **NGINX ingress** and **external-dns**
 - Terraform
 - kubectl
 - Docker
@@ -32,7 +32,7 @@ Set environment variables
 ```sh
 # Required configuration
 export TF_VAR_domain='federated-catalogue.example.com'
-export IONOS_TOKEN="" # curl -s -u 'USERNAME:PASSWORD' https://api.ionos.com/auth/v1/tokens/generate | jq -r '.token'
+export TF_VAR_kubeconfig='~/.kube/config'
 
 # Optional configuration
 export TF_VAR_datacenter_name='Digital Ecosystems'
@@ -54,40 +54,9 @@ export TF_VAR_cores_count=2
 
 ### 1. Create Kubernetes cluster
 
-You can skip this step if you already have a Kubernetes cluster.
+To create a Kubernetes cluster on IONOS cloud with installed **cert-manager** and **external-dns** follow the steps in [ionos-kubernetes-cluster](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) repository.
 
-To create the necessary infrastructure run the script ```build-cloud-landscape``` in ```../terraform``` directory. Terraform will generate the `kubeconfig-ionos.yaml` which contain the KUBECONFIG for the cluster. 
-```sh
-cd ../terraform-kubernetes-dcd
-./build-cloud-landscape.sh
-```
-
-### 2. Install and configure `external-dns`
-
-(Optional) If you already have a Kubernetes cluster and have skipped step1 of this deployment procedure, you must configure the path to the KUBECONFIG like so:
-
-```sh
-export TF_VAR_kubeconfig="path/to/kubeconfig"
-```
-
-Return to the ```federated-catalogue``` directory
-
-```sh
-cd ../federated-catalogue
-```
-
-To install the DNS service you must first create secret containing service account credentials for one of the providers ( AWS, GCP, Azure, ... ) and configure it in the values file - ```../helm/external-dns/values.yaml```. After that install the service with helm.
-
-```sh
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm install -n external-dns external-dns bitnami/external-dns -f ../helm/external-dns/values.yaml --create-namespace --version 6.14.1
-
-# wait for external-dns POD to become ready
-kubectl wait pods -n external-dns -l app.kubernetes.io/name=external-dns --for condition=Ready --timeout=300s
-```
-
-### 3. Install the Federated-Catalogue services
+### 2. Install the Federated-Catalogue services
 
 To install the other services run the script ```deploy-services.sh``` in ```terraform-kubernetes-dcd``` directory.
 
