@@ -53,19 +53,11 @@ module "infrastructure_services" {
   domain = "${var.domain}"
 }
 
-module "certificate_issuer" {
-  source = "./certificate_issuer"
-
-  depends_on = [
-    module.infrastructure_services
-  ]
-}
-
 module "federated_catalogue" {
   source = "./federated_catalogue"
 
   depends_on = [
-    module.certificate_issuer
+    module.infrastructure_services
   ]
 
   domain = "${var.domain}"

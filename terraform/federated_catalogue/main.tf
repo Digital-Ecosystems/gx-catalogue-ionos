@@ -16,6 +16,14 @@ resource "helm_release" "fc" {
   ]
 
   set {
+    name  = "ingress.hosts[0].host"
+    value = "fc.${var.domain}"
+  }
+  set {
+    name  = "ingress.tls[0].hosts[0]"
+    value = "fc.${var.domain}"
+  }
+  set {
     name  = "fc.keycloakAuthServerUrl"
     value = "https://fc-key-server.${var.domain}"
   }
@@ -37,6 +45,8 @@ resource "helm_release" "demo-portal" {
   values = [
     "${file("../deployment/helm/demo-portal/values.yaml")}"
   ]
+
+  wait = false
 
   set {
     name  = "ingress.hosts[0].host"

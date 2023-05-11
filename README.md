@@ -25,30 +25,21 @@ Before you start deploying the Federated Catalogue, make sure you meet the requi
 - DNS server and domain name
 - Kubernetes cluster with installed **cert-manager**, **NGINX ingress**, and **external-dns**
 
-## Configuration
+***
 
+## Configuration
 Set environment variables
 
 ```sh
-# Required configuration
-export TF_VAR_domain='federated-catalogue.example.com'
-export TF_VAR_kubeconfig="path/to/kubeconfig"
+# copy .env-template to .env and set the values of the required parameters
+cp .env-template .env
 
-# Optional configuration
-export TF_VAR_datacenter_name='Digital Ecosystems'
-export TF_VAR_kubernetes_cluster_name='federated-catalogue'
-export TF_VAR_datacenter_location='de/txl'
-export IONOS_API_URL="api.ionos.com"
-export TF_LOG=debug
-export IONOS_LOG_LEVEL=debug
-
-# Optional configuration for the Kubernetes resource allocation
-export TF_VAR_node_memory=8192
-export TF_VAR_node_count=2
-export TF_VAR_cores_count=2
+# load the configuration
+source .env
 ```
 
 ***
+
 ## Deploy
 
 
@@ -56,52 +47,47 @@ export TF_VAR_cores_count=2
 
 Follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) to create Kubernetes cluster with installed **cert-manager**, **NGINX ingress**, and optionally **external-dns**.
 
-### 2. DNS
+### 2. Install and configure `external-dns` (Optional)
 
-#### Option 1 - `external-dns`
+Skip this step if you want to use Ionos DNS service.
 
-(Optional) If you already have a Kubernetes cluster and have skipped step1 of this deployment procedure, you must configure the path to the KUBECONFIG like so:
+
+If you already have a Kubernetes cluster and have skipped step1 of this deployment procedure, you must configure the path to the KUBECONFIG like so:
 
 ```sh
 export TF_VAR_kubeconfig="path/to/kubeconfig"
 ```
 
-Return to the ```federated-catalogue``` directory
-
+and set ```USE_IONOS_DNS``` variable to False:
 ```sh
-cd ../federated-catalogue
+export USE_IONOS_DNS=False
 ```
 
-To install the DNS service you must first create secret containing service account credentials for one of the providers ( AWS, GCP, Azure, ... ) and configure it in the values file - ```../helm/external-dns/values.yaml```. After that install the service with helm.
+Follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) for **external-dns**.
 
-```sh
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm install -n external-dns external-dns bitnami/external-dns -f ../helm/external-dns/values.yaml --create-namespace --version 6.14.1
+### 3. Use Ionos DNS service (Optional)
 
-# wait for external-dns POD to become ready
-kubectl wait pods -n external-dns -l app.kubernetes.io/name=external-dns --for condition=Ready --timeout=300s
+In order to use the DNS service, you should have skipped step 2 and you will need NS record pointing to Ionos name servers
+
+```
+ns-ic.ui-dns.com
+ns-ic.ui-dns.de
+ns-ic.ui-dns.org
+ns-ic.ui-dns.biz
 ```
 
-#### Option 2 - `manual` DNS entries
-
-If your DNS service is not available as provider in **external-dns**, you must create the DNS entries manually. Create the following DNS entries:
-
-A record for ```fc-demo-portal.<DOMAIN>``` pointing to the IP address of the Ingress IP in the Kubernetes cluster.
-A record for ```fc-key-server.<DOMAIN>``` pointing to the IP address of the Ingress IP in the Kubernetes cluster.
-
-To get assigned IP address to the Ingress svc, run the following command:
-
+You will also need to set ```USE_IONOS_DNS``` variable to True:
 ```sh
-kubectl -n nginx-ingress get service nginx-ingress-nginx-ingress
+export USE_IONOS_DNS=True
 ```
+If you have DNS zone already configured set ```IONOS_DNS_ZONE_ID``` environment variable.
 
-### 3. Install the Federated-Catalogue services
+### 4. Install the Federated-Catalogue services
 
-To install the other services run the script ```deploy-services.sh``` in ```ionos-kubernetes-dcd``` directory.
+To install the other services run the script ```deploy-services.sh``` in ```terraform``` directory.
 
 ```sh
-cd ionos-kubernetes-dcd
+cd terraform
 ./deploy-services.sh
 ```
 
