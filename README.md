@@ -109,6 +109,14 @@ Go to ```https://fc-demo-portal.<DOMAIN>``` and login with the user you have cre
 
 **Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_domain```.
 
+### 6. Uninstall
+
+To uninstall the federated-catalogue services run the script ```uninstall-services.sh``` in ```terraform``` directory.
+
+```sh
+./uninstall-services.sh
+```
+
 ### References
 
 Documentation for the [IONOS Cloud API](https://api.ionos.com/docs/)  
