@@ -1,19 +1,15 @@
 ***
 # Federated Catalogue deployment
 
-This document describes how to deploy the Federated Catalogue on IONOS DCD.
+This repository contains instructions to install the GAIA-X Federated Catalogue on IONOS Cloud.
 
-***
 These are the services that are deployed:
-
-- [Demo Portal](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/tree/main/demo-portal): A demo portal to showcase the Federated Catalogue.
-- [Federated Catalogue](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/tree/main/fc-service-server): The Federated Catalogue service.
-- [Keycloak](https://www.keycloak.org/): An open source identity and access management solution.
-- [Neo4j](https://neo4j.com/): A graph database management system.
-- [PostgreSQL](https://www.postgresql.org/): Open source object-relational database system.
-
+- Demo Portal
+- Federated Catalogue
+- Keycloak
+- Neo4j
+- PostgreSQL
 ***
-
 
 ## Requirements
 
@@ -37,11 +33,10 @@ cp .env-template .env
 # load the configuration
 source .env
 ```
-
+> Note: For production deployments, make sure you change the **client-secret** [gaia-x-realm.json](deployment/kind/keycloak/gaia-x-realm.json) to a more secure value.
 ***
 
 ## Deploy
-
 
 ### 1. Create Kubernetes cluster
 
@@ -84,24 +79,26 @@ If you have DNS zone already configured set ```IONOS_DNS_ZONE_ID``` environment 
 
 ### 4. Install the Federated-Catalogue services
 
-To install the other services run the script ```deploy-services.sh``` in ```terraform``` directory.
+To install the other services run the script ```deploy-catalog-services.sh``` in ```terraform``` directory.
 
 ```sh
 cd terraform
-./deploy-services.sh
+./deploy-catalog-services.sh
 ```
 
 ### 4. Create user
 
-Open the Keycloak admin console in your browser ```https://fc-key-server.<DOMAIN>/admin/master/console/#/create/user/gaia-x``` and login with ```admin/admin```.
+Open the Keycloak admin console in your browser ```https://fc-key-server.<DOMAIN>``` and login with ```admin/admin```. Navigate to ```https://fc-key-server.<DOMAIN>/admin/master/console/#/create/user/gaia-x```.
 
 **Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_domain```.
 
-Fill in the form and click on **Save**. Make sure "Email Verified" is set to **ON**.
+Go to **Users** and click on **Add user**. Fill in the form and click on **Save**. Make sure "Email Verified" is set to **ON**.
 
 Next click on **Credentials** and set a password for the user.
 
 After that click on **Role Mappings**. On **Client Roles** dropdown select **federated-catalogue** and move **Ro-MU-A**, **Ro-MU-CA**, **Ro-PA-A**, and **Ro-SD-A** to **Assigned Roles**.
+
+Logout from Keycloak.
 
 ### 5. Access the demo portal
 
@@ -111,13 +108,52 @@ Go to ```https://fc-demo-portal.<DOMAIN>``` and login with the user you have cre
 
 ### 6. Uninstall
 
-To uninstall the federated-catalogue services run the script ```uninstall-services.sh``` in ```terraform``` directory.
+To uninstall the federated-catalogue services run the script ```uninstall-catalog-services.sh``` in ```terraform``` directory.
 
 ```sh
-./uninstall-services.sh
+./uninstall-catalog-services.sh
+```
+
+***
+
+### 7. Using the fc-server REST API
+
+Get JWT token from keycloak
+```sh
+# Note: replace the capitalized values with your own values
+ACCESS_TOKEN=$(
+    curl -s \
+    -d "client_id=federated-catalogue" \
+    -d "client_secret=keycloak-client-secret" \
+    -d "username=<USERNAME>" \
+    -d "password=<PASSWORD>" \
+    -d "grant_type=password" \
+    "https://fc-key-server.<DOMAIN>/realms/gaia-x/protocol/openid-connect/token" | jq '.access_token' | tr -d '"'
+)
+echo $ACCESS_TOKEN
+```
+
+Call the fc-server REST API
+```sh
+# get participants
+curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/participants
+
+# get users
+curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/users
+
+# get roles
+curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/roles
 ```
 
 ### References
 
-Documentation for the [IONOS Cloud API](https://api.ionos.com/docs/)  
-Documentation for the [IONOSCLOUD Terraform provider](https://registry.terraform.io/providers/ionos-cloud/ionoscloud/latest/docs/)
+- GAIA-X [Federated Catalogue](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/tree/main/fc-service-server)  
+- Federated Catalogue [WIKI](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/wikis/home)
+- Federated Catalogue fc-service [REST API](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/blob/main/openapi/fc_openapi.yaml)
+- [IONOS Kubernetes cluster provisioning on DCD](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster)  
+- GAIA-X [Demo Portal](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/tree/main/demo-portal) application  
+- [Keycloak](https://www.keycloak.org/)  
+- [Neo4j](https://neo4j.com/)  
+- [PostgreSQL](https://www.postgresql.org/)  
+- Documentation for the [IONOS Cloud API](https://api.ionos.com/docs/)    
+- Documentation for the [IONOSCLOUD Terraform provider](https://registry.terraform.io/providers/ionos-cloud/ionoscloud/latest/docs/)  

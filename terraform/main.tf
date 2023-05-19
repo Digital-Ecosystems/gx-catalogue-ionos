@@ -30,7 +30,6 @@ variable "kubeconfig" {
 
 provider "kubernetes" {
   config_path    = "${var.kubeconfig}"
-  config_context = "cluster-admin@federated-catalog"
 }
 
 provider "helm" {
@@ -47,6 +46,10 @@ variable "domain" {
   default = "example.com"
 }
 
+variable "namespace" {
+  default = "federated-catalogue"
+}
+
 module "infrastructure_services" {
   source = "./infrastructure_services"
 
@@ -61,4 +64,5 @@ module "federated_catalogue" {
   ]
 
   domain = "${var.domain}"
+  namespace = "${var.namespace}"
 }
