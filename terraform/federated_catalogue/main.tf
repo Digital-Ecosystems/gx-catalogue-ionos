@@ -1,3 +1,7 @@
+variable "namespace" {
+  default = "federated-catalogue"
+}
+
 variable "domain" {
   default = "example.com"
 }
@@ -8,8 +12,7 @@ resource "helm_release" "fc" {
   repository = "../deployment/helm"
   chart      = "fc"
 
-  namespace = "federated-catalogue"
-  create_namespace = true
+  namespace = var.namespace
 
   values = [
     "${file("../deployment/helm/fc/values.yaml")}"
@@ -39,8 +42,7 @@ resource "helm_release" "demo-portal" {
   repository = "../deployment/helm"
   chart      = "demo-portal"
 
-  namespace = "federated-catalogue"
-  create_namespace = true
+  namespace = var.namespace
 
   values = [
     "${file("../deployment/helm/demo-portal/values.yaml")}"

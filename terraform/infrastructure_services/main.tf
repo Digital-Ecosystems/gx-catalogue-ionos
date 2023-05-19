@@ -1,3 +1,14 @@
+variable "namespace" {
+  default = "federated-catalogue"
+}
+
+# create kubernetes namespace resource
+resource "kubernetes_namespace" "federated-catalogue" {
+  metadata {
+    name = var.namespace
+  }
+}
+
 # install helm postgresql
 resource "helm_release" "postgres" {
   name       = "postgres"
@@ -5,8 +16,7 @@ resource "helm_release" "postgres" {
   repository = "../deployment/helm"
   chart      = "postgres"
 
-  namespace = "federated-catalogue"
-  create_namespace = true
+  namespace = kubernetes_namespace.federated-catalogue.metadata[0].name
 
   values = [
     "${file("../deployment/helm/postgres/values.yaml")}"
@@ -23,8 +33,7 @@ resource "helm_release" "keycloak" {
   repository = "../deployment/helm"
   chart      = "keycloak"
 
-  namespace = "federated-catalogue"
-  create_namespace = true
+  namespace = kubernetes_namespace.federated-catalogue.metadata[0].name
 
   values = [
     "${file("../deployment/helm/keycloak/values.yaml")}"
@@ -55,8 +64,7 @@ resource "helm_release" "neo4j" {
   repository = "../deployment/helm"
   chart      = "neo4j"
 
-  namespace = "federated-catalogue"
-  create_namespace = true
+  namespace = var.namespace
 
   values = [
     "${file("../deployment/helm/neo4j/values.yaml")}"

@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 if [ -z `printenv TF_VAR_domain` ]; then
     echo "Stopping because TF_VAR_domain is undefined"
@@ -48,3 +48,5 @@ if [ $USE_IONOS_DNS == True ]; then
     fi
 
 fi
+
+kubectl delete namespace federated-catalogue
