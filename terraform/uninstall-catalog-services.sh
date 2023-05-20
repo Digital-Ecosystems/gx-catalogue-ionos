@@ -49,4 +49,3 @@ if [ $USE_IONOS_DNS == True ]; then
 
 fi
 
-kubectl delete namespace federated-catalogue
