@@ -41,7 +41,7 @@ if [ $USE_IONOS_DNS == True ]; then
         DNS_ZONE_ID=$IONOS_DNS_ZONE_ID
     fi
 
-    INGRESS_CONTROLLER_IP=$(kubectl --kubeconfig=$TF_VAR_kubeconfig -n nginx-ingress get svc nginx-ingress-nginx-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    INGRESS_CONTROLLER_IP=$(kubectl --kubeconfig=$TF_VAR_kubeconfig -n nginx-ingress get svc nginx-ingress-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
     if [ $? != 0 ]; then
         echo "Getting ingress controller ip failed"
         exit 1
