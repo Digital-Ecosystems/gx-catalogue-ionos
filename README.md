@@ -132,6 +132,17 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/users
 curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/roles
 ```
 
+### Known issues
+
+- Installation fails due to remaining 'keyclaok' Postgres database. 
+```
+To fix this, delete the database, uninstall and re-run the installation script.
+```
+- Services take too long to start. 
+```
+Check if DNS records have propagated. It could take a while 30-60 minutes for the DNS records to propagate.
+```
+
 ### References
 
 - GAIA-X [Federated Catalogue](https://gitlab.com/gaia-x/data-infrastructure-federation-services/cat/fc-service/-/tree/main/fc-service-server)  
