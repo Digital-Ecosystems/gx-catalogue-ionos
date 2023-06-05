@@ -42,7 +42,7 @@ provider "kubectl" {
   config_path    = "${var.kubeconfig}"
 }
 
-variable "domain" {
+variable "dns_zone" {
   default = "example.com"
 }
 
@@ -53,7 +53,7 @@ variable "namespace" {
 module "infrastructure_services" {
   source = "./infrastructure_services"
 
-  domain = "${var.domain}"
+  dns_zone = "${var.dns_zone}"
 }
 
 module "federated_catalogue" {
@@ -63,6 +63,6 @@ module "federated_catalogue" {
     module.infrastructure_services
   ]
 
-  domain = "${var.domain}"
+  dns_zone = "${var.dns_zone}"
   namespace = "${var.namespace}"
 }

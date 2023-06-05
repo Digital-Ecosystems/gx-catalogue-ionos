@@ -2,7 +2,7 @@ variable "namespace" {
   default = "federated-catalogue"
 }
 
-variable "domain" {
+variable "dns_zone" {
   default = "example.com"
 }
 
@@ -20,19 +20,19 @@ resource "helm_release" "fc" {
 
   set {
     name  = "ingress.hosts[0].host"
-    value = "fc.${var.domain}"
+    value = "fc.${var.dns_zone}"
   }
   set {
     name  = "ingress.tls[0].hosts[0]"
-    value = "fc.${var.domain}"
+    value = "fc.${var.dns_zone}"
   }
   set {
     name  = "fc.keycloakAuthServerUrl"
-    value = "https://fc-key-server.${var.domain}"
+    value = "https://fc-key-server.${var.dns_zone}"
   }
   set {
     name  = "fc.springSecurityOauth2ResourceserverJwtIssuerUri"
-    value = "https://fc-key-server.${var.domain}/realms/gaia-x"
+    value = "https://fc-key-server.${var.dns_zone}/realms/gaia-x"
   }
 }
 
@@ -52,14 +52,14 @@ resource "helm_release" "demo-portal" {
 
   set {
     name  = "ingress.hosts[0].host"
-    value = "fc-demo-portal.${var.domain}"
+    value = "fc-demo-portal.${var.dns_zone}"
   }
   set {
     name  = "ingress.tls[0].hosts[0]"
-    value = "fc-demo-portal.${var.domain}"
+    value = "fc-demo-portal.${var.dns_zone}"
   }
   set {
     name = "demoPortal.keycloakIssuerUri"
-    value = "https://fc-key-server.${var.domain}/realms/gaia-x"
+    value = "https://fc-key-server.${var.dns_zone}/realms/gaia-x"
   }
 }

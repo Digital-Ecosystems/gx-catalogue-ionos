@@ -1,14 +1,28 @@
 #!/bin/bash
 
-if [ -z `printenv TF_VAR_domain` ]; then
-    echo "Stopping because TF_VAR_domain is undefined"
+if [ -z `printenv TF_VAR_dns_zone` ]; then
+    echo "Stopping because TF_VAR_dns_zone is undefined"
     exit 1
 fi  
 
-if [ -z `printenv USE_IONOS_DNS` ]; then
-    echo "Stopping because USE_IONOS_DNS is undefined"
+if [ -z `printenv DNS_TYPE` ]; then
+    echo "Stopping because DNS_TYPE is undefined"
     exit 1
 fi  
+
+DNS_TYPE_values=("external-dns" "manual" "ionos_dnsaas")
+found=false
+for value in "${DNS_TYPE_values[@]}"
+do
+    if [ "$value" == "${DNS_TYPE}" ] ; then
+        echo "${DNS_TYPE} is in the array"
+        found=true
+    fi
+done
+if [ $found == false ] ; then
+    echo "Stopping because DNS_TYPE is not valid"
+    exit 1
+fi
 
 if [ -z `printenv TF_VAR_kubeconfig` ]; then
     echo "Stopping because TF_VAR_kubeconfig is undefined"
@@ -16,9 +30,9 @@ if [ -z `printenv TF_VAR_kubeconfig` ]; then
 fi  
 
 # This script is used to build the cloud landscape for the federated catalogue.
-terraform init && terraform refresh && terraform plan && terraform apply -auto-approve
+terraform -chdir=terraform init && terraform -chdir=terraform refresh && terraform -chdir=terraform plan && terraform -chdir=terraform apply -auto-approve
 
-if [ $USE_IONOS_DNS == True ]; then
+if [ $DNS_TYPE == 'ionos_dnsaas' ]; then
     if [ -z `printenv IONOS_DNS_ZONE_ID` ]; then
         DNS_ZONE_ID=$(curl -X "POST" \
             -H "accept: application/json" \
@@ -28,7 +42,7 @@ if [ $USE_IONOS_DNS == True ]; then
                 \"properties\": { \
                     \"description\": \"Federated Catalogue DNS zone\", \
                     \"enabled\": true, \
-                    \"zoneName\": \"$TF_VAR_domain\"
+                    \"zoneName\": \"$TF_VAR_dns_zone\"
                 } \
             }" \
             "https://dns.de-fra.ionos.com/zones" |jq -r '.id')
@@ -39,6 +53,7 @@ if [ $USE_IONOS_DNS == True ]; then
         fi
     else
         DNS_ZONE_ID=$IONOS_DNS_ZONE_ID
+        echo "Zone ID: $DNS_ZONE_ID"
     fi
 
     INGRESS_CONTROLLER_IP=$(kubectl --kubeconfig=$TF_VAR_kubeconfig -n nginx-ingress get svc nginx-ingress-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
