@@ -18,7 +18,7 @@ fi
 # This script is used to build the cloud landscape for the federated catalogue.
 terraform -chdir=terraform destroy -auto-approve
 
-if [ $DNS_TYPE == True ]; then
+if [ $DNS_TYPE == 'ionos_dnsaas' ]; then
     if [ -z `printenv IONOS_DNS_ZONE_ID` ]; then
         DNS_ZONE_ID=$(curl -X "GET" \
     -H "accept: application/json" \
