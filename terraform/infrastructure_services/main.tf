@@ -24,7 +24,7 @@ resource "helm_release" "postgres" {
 }
 
 # install helm keycloak
-variable "domain" {
+variable "dns_zone" {
   default = "example.com"
 }
 resource "helm_release" "keycloak" {
@@ -41,19 +41,19 @@ resource "helm_release" "keycloak" {
 
   set {
     name  = "ingress.hosts[0].host"
-    value = "fc-key-server.${var.domain}"
+    value = "fc-key-server.${var.dns_zone}"
   }
   set {
     name  = "ingress.tls[0].hosts[0]"
-    value = "fc-key-server.${var.domain}"
+    value = "fc-key-server.${var.dns_zone}"
   }
   set {
     name  = "keycloak.federatedCatalogueClientRedirectUris[0]"
-    value = "https://fc-demo-portal.${var.domain}/*"
+    value = "https://fc-demo-portal.${var.dns_zone}/*"
   }
   set {
     name  = "keycloak.hostname"
-    value = "fc-key-server.${var.domain}"
+    value = "fc-key-server.${var.dns_zone}"
   }
 }
 

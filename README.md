@@ -46,19 +46,7 @@ Follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernet
 
 Skip this step if you want to use Ionos DNS service.
 
-
-If you already have a Kubernetes cluster and have skipped step1 of this deployment procedure, you must configure the path to the KUBECONFIG like so:
-
-```sh
-export TF_VAR_kubeconfig="path/to/kubeconfig"
-```
-
-and set ```USE_IONOS_DNS``` variable to False:
-```sh
-export USE_IONOS_DNS=False
-```
-
-Follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) for **external-dns**.
+If you don't have `external-dns` configured on your cluster, follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) for **external-dns**.
 
 ### 3. Use Ionos DNS service (Optional)
 
@@ -71,9 +59,9 @@ ns-ic.ui-dns.org
 ns-ic.ui-dns.biz
 ```
 
-You will also need to set ```USE_IONOS_DNS``` variable to True:
+You will also need to set ```DNS_TYPE``` variable to True:
 ```sh
-export USE_IONOS_DNS=True
+export DNS_TYPE='ionos_dnsaas'
 ```
 If you have DNS zone already configured set ```IONOS_DNS_ZONE_ID``` environment variable.
 
@@ -82,7 +70,6 @@ If you have DNS zone already configured set ```IONOS_DNS_ZONE_ID``` environment 
 To install the other services run the script ```deploy-catalog-services.sh``` in ```terraform``` directory.
 
 ```sh
-cd terraform
 ./deploy-catalog-services.sh
 ```
 
@@ -90,7 +77,7 @@ cd terraform
 
 Open the Keycloak admin console in your browser ```https://fc-key-server.<DOMAIN>``` and login with ```admin/admin```. Navigate to ```https://fc-key-server.<DOMAIN>/admin/master/console/#/create/user/gaia-x```.
 
-**Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_domain```.
+**Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_dns_zone```.
 
 Go to **Users** and click on **Add user**. Fill in the form and click on **Save**. Make sure "Email Verified" is set to **ON**.
 
@@ -104,11 +91,11 @@ Logout from Keycloak.
 
 Go to ```https://fc-demo-portal.<DOMAIN>``` and login with the user you have created in the previous step.
 
-**Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_domain```.
+**Note:** Replace ```<DOMAIN>``` with the domain name you have set in the environment variable ```TF_VAR_dns_zone```.
 
 ### 6. Uninstall
 
-To uninstall the federated-catalogue services run the script ```uninstall-catalog-services.sh``` in ```terraform``` directory.
+To uninstall the federated-catalogue services run the script ```uninstall-catalog-services.sh```.
 
 ```sh
 ./uninstall-catalog-services.sh
@@ -143,6 +130,17 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/users
 
 # get roles
 curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/roles
+```
+
+### Known issues
+
+- Installation fails due to remaining 'keyclaok' Postgres database. 
+```
+To fix this, delete the database, uninstall and re-run the installation script.
+```
+- Services take too long to start. 
+```
+Check if DNS records have propagated. It could take a while 30-60 minutes for the DNS records to propagate.
 ```
 
 ### References
