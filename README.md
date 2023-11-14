@@ -132,6 +132,35 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/users
 curl -H "Authorization: Bearer $ACCESS_TOKEN" https://fc.<DOMAIN>/roles
 ```
 
+### Create service offering
+
+**WARNING** Make sure validations for `semantics`, `schema` and `signatures` are turned on in the `federated-catalogue` deployment.
+
+Retrieve an access token for a user from the http://<KEY-SERVER>/realms/gaia-x endpoint
+```sh
+curl  -d "client_id=federated-catalogue" -d "client_secret=keycloak-client-secret" -d "username=<USERNAME>" -d 'password=<PASSWORD>' -d "grant_type=password" "https://<KEY-SERVER>/realms/gaia-x/protocol/openid-connect/token"
+```
+
+Post the example service offering to http://<fc-server>/self-descriptions endpoint, and then query it from there
+```sh
+curl -X 'POST' \
+  'https://<KEY-SERVER>/self-descriptions' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <ACCESS-TOKEN>' \
+  -d @./examples/serviceOffering.jsonld
+```
+
+Post the example legal person to http://<fc-server>/participants endpoint, and then query it from there
+```sh
+curl -X 'POST' \
+  'https://<KEY-SERVER>/participants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <ACCESS-TOKEN>' \
+  -d @./examples/legalPerson.jsonld
+```
+
 ### Known issues
 
 - Installation fails due to remaining 'keyclaok' Postgres database. 
