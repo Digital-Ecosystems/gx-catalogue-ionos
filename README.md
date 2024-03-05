@@ -42,6 +42,20 @@ source .env
 
 Follow [these instructions](https://github.com/Digital-Ecosystems/ionos-kubernetes-cluster) to create Kubernetes cluster with installed **cert-manager**, **NGINX ingress**, and optionally **external-dns**.
 
+### 1.1 Create additonal node pool
+
+
+    ionosctl datacenter list
+    export DE_DATACENTER_ID=0bbfc15f-32c5-48a8-a5e0-6a2d24378743
+    ionosctl k8s cluster list
+    export DE_CLUSTER_ID=bbbb0a6d-4158-40d6-8a96-a497bad459d3
+    ionosctl k8s cluster get --cluster-id $DE_CLUSTER_ID
+    export DOME_K8S_INGRESS_NODEPOOL_ID=$(ionosctl k8s nodepool create --cluster-id $DE_CLUSTER_ID --name federated-catalog-ingress-pool --node-count 1 --datacenter-id $DE_DATACENTER_ID --cpu-family "INTEL_SKYLAKE" --labels nodepool=ingress -o json | jq -r '.items[0].id')
+
+### Install ingress-controller
+    
+    helm install --replace -n nginx-ingress nginx-ingress ingress-nginx/ingress-nginx -f deployment/helm/ingress-controller/values.yaml --version 4.7.2 --create-namespace
+
 ### 2. Install and configure `external-dns` (Optional)
 
 Skip this step if you want to use Ionos DNS service.
@@ -51,7 +65,7 @@ If you don't have `external-dns` configured on your cluster, follow [these instr
 ### 3. Use Ionos DNS service (Optional)
 
 In order to use the DNS service, you should have skipped step 2 and you will need NS record pointing to Ionos name servers
-
+kubectl create secret generic ionos-credentials --from-literal=api-key='api-key'
 ```
 ns-ic.ui-dns.com
 ns-ic.ui-dns.de
@@ -64,6 +78,8 @@ You will also need to set ```DNS_TYPE``` variable to True:
 export DNS_TYPE='ionos_dnsaas'
 ```
 If you have DNS zone already configured set ```IONOS_DNS_ZONE_ID``` environment variable.
+
+Follow the instructions in /external-dns-ionos-webhook/README_EXTERNAL_DNS.md
 
 ### 4. Install the Federated-Catalogue services
 
